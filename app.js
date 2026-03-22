@@ -6,6 +6,9 @@ let saveTimeout = null;
 let syncTodayButtonEl = null;
 let didInitialTodayScroll = false;
 let todaySyncScrollRaf = null;
+let johnPorkLayerEl = null;
+let johnPorkToggleBtn = null;
+let johnPorkOnTop = false;
 
 function nowISO() {
   return new Date().toISOString();
@@ -118,6 +121,41 @@ function onTodayScrollOrResize() {
   scheduleTodaySyncUi();
 }
 
+function updateJohnPorkButtonLabel() {
+  if (!johnPorkToggleBtn) return;
+  johnPorkToggleBtn.textContent = johnPorkOnTop ? "Xuống nền" : "Hiện John Pork";
+  johnPorkToggleBtn.setAttribute("aria-pressed", johnPorkOnTop ? "true" : "false");
+}
+
+function handleJohnPorkFadeTransitionEnd(e) {
+  if (e.propertyName !== "opacity") return;
+  const el = johnPorkLayerEl;
+  if (!el || !el.classList.contains("john-pork-mascot--fade-out")) return;
+  el.removeEventListener("transitionend", handleJohnPorkFadeTransitionEnd);
+  johnPorkOnTop = !johnPorkOnTop;
+  el.classList.toggle("john-pork-mascot--foreground", johnPorkOnTop);
+  el.classList.toggle("john-pork-mascot--background", !johnPorkOnTop);
+  el.classList.remove("john-pork-mascot--fade-out");
+  updateJohnPorkButtonLabel();
+}
+
+function toggleJohnPorkLayer() {
+  const el = johnPorkLayerEl;
+  if (!el) return;
+  if (el.classList.contains("john-pork-mascot--fade-out")) return;
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    johnPorkOnTop = !johnPorkOnTop;
+    el.classList.toggle("john-pork-mascot--foreground", johnPorkOnTop);
+    el.classList.toggle("john-pork-mascot--background", !johnPorkOnTop);
+    updateJohnPorkButtonLabel();
+    return;
+  }
+
+  el.addEventListener("transitionend", handleJohnPorkFadeTransitionEnd);
+  el.classList.add("john-pork-mascot--fade-out");
+}
+
 function goToToday() {
   const t = new Date();
   const y = t.getFullYear();
@@ -151,6 +189,31 @@ function mount() {
 
   page.appendChild(inner);
   root.appendChild(page);
+
+  if (!johnPorkLayerEl) {
+    const img = document.createElement("img");
+    img.id = "john-pork-mascot";
+    img.className = "john-pork-mascot john-pork-mascot--background";
+    img.src = "./John_Pork.webp";
+    img.alt = "";
+    img.decoding = "async";
+    img.draggable = false;
+    document.body.insertBefore(img, root);
+    johnPorkLayerEl = img;
+  }
+
+  if (!johnPorkToggleBtn) {
+    const jpBtn = document.createElement("button");
+    jpBtn.type = "button";
+    jpBtn.className = "john-pork-toggle-btn";
+    jpBtn.textContent = "Hiện John Pork";
+    jpBtn.title = "Đưa John Pork lên trên hoặc xuống nền";
+    jpBtn.setAttribute("aria-pressed", "false");
+    jpBtn.addEventListener("click", toggleJohnPorkLayer);
+    document.body.appendChild(jpBtn);
+    johnPorkToggleBtn = jpBtn;
+    updateJohnPorkButtonLabel();
+  }
 
   if (!syncTodayButtonEl) {
     const btn = document.createElement("button");
@@ -330,6 +393,7 @@ function renderCalendar() {
   const totalCells = Math.ceil(daysInMonth / 7) * 7;
 
   const container = document.createElement("div");
+  container.className = "calendar-wrap";
 
   const headerRow = document.createElement("div");
   headerRow.className = "calendar-header-row";

@@ -2,10 +2,20 @@
   --text: #1f160f;
   --text-muted: #8a7a6a;
   --accent: #e6a44c;
-  --accent-soft: rgba(230, 164, 76, 0.15);
+  --accent-soft: rgba(230, 164, 76, 0.2);
   --border-subtle: rgba(0, 0, 0, 0.06);
   --radius-md: 14px;
   --radius-pill: 999px;
+  --paper-base: #f3e9d4;
+  --paper-sheet: #fffdf6;
+  --paper-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  --acrylic-fill: rgba(255, 255, 255, 0.14);
+  --acrylic-fill-strong: rgba(255, 253, 246, 0.22);
+  --acrylic-edge: rgba(255, 255, 255, 0.42);
+  --acrylic-blur: blur(18px) saturate(1.35);
+  --z-mascot-back: 0;
+  --z-calendar-app: 2;
+  --z-mascot-front: 10;
 }
 
 *,
@@ -16,6 +26,7 @@
 
 html {
   zoom: 1.1;
+  background-color: var(--paper-base);
 }
 
 html,
@@ -28,9 +39,86 @@ body {
 body {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  background-color: #fff;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  background-color: var(--paper-base);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.012) 2px,
+      rgba(0, 0, 0, 0.012) 3px
+    ),
+    radial-gradient(
+      ellipse 95% 60% at 50% -12%,
+      rgba(255, 248, 228, 0.65),
+      transparent 52%
+    ),
+    var(--paper-noise);
+  background-position: 0 0, center, 0 0;
+  background-size: auto, auto, 168px 168px;
+  background-repeat: repeat, no-repeat, repeat;
+  background-attachment: fixed;
+}
+
+/* z-index chỉ đặt ở modifier có cùng specificity với #id — trước đây #john-pork-mascot { z-index:0 } luôn thắng .john-pork-mascot--foreground */
+#john-pork-mascot,
+.john-pork-mascot {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: min(340px, 48vw);
+  height: auto;
+  max-height: min(55vh, 520px);
+  object-fit: contain;
+  object-position: right bottom;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.35s ease;
+}
+
+#john-pork-mascot.john-pork-mascot--foreground,
+.john-pork-mascot.john-pork-mascot--foreground {
+  z-index: var(--z-mascot-front);
+}
+
+#john-pork-mascot.john-pork-mascot--background,
+.john-pork-mascot.john-pork-mascot--background {
+  z-index: var(--z-mascot-back);
+}
+
+.john-pork-mascot--fade-out {
+  opacity: 0;
+}
+
+.john-pork-toggle-btn {
+  position: fixed;
+  z-index: 9999;
+  right: 20px;
+  bottom: 76px;
+  padding: 10px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--acrylic-fill-strong);
+  border: 1px solid var(--acrylic-edge);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  backdrop-filter: var(--acrylic-blur);
+  -webkit-backdrop-filter: var(--acrylic-blur);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.john-pork-toggle-btn:hover {
+  background: rgba(255, 253, 246, 0.38);
+}
+
+.john-pork-toggle-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .sync-today-btn {
@@ -43,14 +131,16 @@ body {
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
-  background: #fff;
-  border: 1px solid var(--border-subtle);
+  background: var(--acrylic-fill-strong);
+  border: 1px solid var(--acrylic-edge);
   border-radius: var(--radius-pill);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  backdrop-filter: var(--acrylic-blur);
+  -webkit-backdrop-filter: var(--acrylic-blur);
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.22s ease, background 0.15s ease;
 }
 
 .sync-today-btn--visible {
@@ -59,7 +149,7 @@ body {
 }
 
 .sync-today-btn:hover {
-  background: var(--accent-soft);
+  background: rgba(255, 253, 246, 0.38);
 }
 
 .sync-today-btn:focus-visible {
@@ -73,7 +163,10 @@ body {
   }
 }
 
+/* Lịch acrylic nằm giữa nền (0) và John Pork khi “hiện” (10) */
 #root {
+  position: relative;
+  z-index: var(--z-calendar-app);
   min-height: 100vh;
   display: flex;
   align-items: stretch;
@@ -144,7 +237,7 @@ body {
 }
 
 .task-row:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .task-input {
@@ -194,8 +287,10 @@ body {
   margin-top: 4px;
   padding: 8px 10px;
   border-radius: var(--radius-md);
-  border: 1px dashed var(--border-subtle);
-  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed rgba(255, 255, 255, 0.45);
+  background: var(--acrylic-fill);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
 }
 
 .quick-add-input {
@@ -218,10 +313,22 @@ body {
   outline: none;
 }
 
+.calendar-wrap {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--acrylic-edge);
+  background: rgba(255, 253, 246, 0.12);
+  backdrop-filter: var(--acrylic-blur);
+  -webkit-backdrop-filter: var(--acrylic-blur);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
 .calendar-month-title {
   font-family: inherit;
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   color: var(--text);
 }
 
@@ -229,7 +336,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 0;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .calendar-nav {
@@ -240,8 +350,10 @@ body {
 
 .calendar-nav button {
   border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--acrylic-edge);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px) saturate(1.15);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
   padding: 2px 8px;
   font-size: 12px;
   cursor: pointer;
@@ -250,15 +362,17 @@ body {
 
 .calendar-select {
   border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--acrylic-edge);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px) saturate(1.15);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
   padding: 2px 6px;
   font-size: 12px;
   color: var(--text-muted);
 }
 
 .calendar-nav button:hover {
-  background: var(--accent-soft);
+  background: rgba(255, 253, 246, 0.42);
 }
 
 .calendar-grid {
@@ -266,16 +380,16 @@ body {
   grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-rows: minmax(170px, auto);
   gap: 0;
-  border-top: 1px solid var(--border-subtle);
-  border-left: 1px solid var(--border-subtle);
-  background: #fff;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 253, 246, 0.06);
 }
 
 .calendar-day {
   border-radius: 0;
   border: none;
-  border-right: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
   background: transparent;
   padding: 6px 6px 8px;
   display: flex;
@@ -284,7 +398,9 @@ body {
 }
 
 .calendar-day-today {
-  background: #fff9e0;
+  background: rgba(255, 249, 200, 0.32);
+  backdrop-filter: blur(8px) saturate(1.1);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
 }
 
 .calendar-day-header {
@@ -376,5 +492,70 @@ body {
   .calendar-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  #john-pork-mascot,
+  .john-pork-mascot {
+    width: min(260px, 72vw);
+    max-height: min(50vh, 420px);
+  }
+
+  .john-pork-toggle-btn {
+    bottom: 72px;
+  }
 }
 
+@supports not (backdrop-filter: blur(1px)) {
+  .calendar-wrap {
+    background: rgba(255, 253, 246, 0.88);
+  }
+
+  .sync-today-btn {
+    background: rgba(255, 253, 246, 0.92);
+  }
+
+  .calendar-nav button,
+  .calendar-select {
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .quick-add-row {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  .calendar-day-today {
+    background: rgba(255, 249, 200, 0.78);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .calendar-wrap,
+  .sync-today-btn,
+  .calendar-nav button,
+  .calendar-select,
+  .quick-add-row,
+  .calendar-day-today {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .calendar-wrap {
+    background: rgba(255, 253, 246, 0.9);
+  }
+
+  .sync-today-btn {
+    background: rgba(255, 253, 246, 0.92);
+  }
+
+  .calendar-nav button,
+  .calendar-select {
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .quick-add-row {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  .calendar-day-today {
+    background: rgba(255, 249, 200, 0.78);
+  }
+}
