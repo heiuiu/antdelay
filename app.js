@@ -123,7 +123,7 @@ function onTodayScrollOrResize() {
 
 function updateJohnPorkButtonLabel() {
   if (!johnPorkToggleBtn) return;
-  johnPorkToggleBtn.textContent = johnPorkOnTop ? "Xuống nền" : "Hiện John Pork";
+  johnPorkToggleBtn.textContent = johnPorkOnTop ? "Ẩn John Pork" : "Hiện John Pork";
   johnPorkToggleBtn.setAttribute("aria-pressed", johnPorkOnTop ? "true" : "false");
 }
 
