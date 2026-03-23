@@ -323,9 +323,6 @@ body {
   position: fixed;
   inset: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
   background: rgba(18, 16, 12, 0.45);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -340,8 +337,28 @@ body {
   pointer-events: auto;
 }
 
+/* All modal overlays: backdrop scrolls when dialog is taller than viewport; touch-friendly */
+.subscription-modal-backdrop,
+.checkout-modal-backdrop,
+.activation-success-backdrop,
+.privacy-policy-backdrop {
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.privacy-policy-backdrop {
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px))
+    max(16px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+}
+
 .privacy-policy-modal {
   width: min(900px, 100%);
+  flex: 0 1 auto;
+  min-height: 0;
   max-height: min(88vh, 960px);
   max-height: min(88dvh, 960px);
   border-radius: 16px;
@@ -353,11 +370,14 @@ body {
   padding: 18px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .privacy-policy-content {
+  flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.46);
@@ -442,6 +462,8 @@ body {
 
 .activation-success-modal {
   width: min(480px, 100%);
+  flex: 0 1 auto;
+  min-height: 0;
   max-height: min(90vh, calc(100vh - 32px));
   max-height: min(90dvh, calc(100vh - 32px));
   overflow-y: auto;
@@ -470,6 +492,8 @@ body {
 
 .subscription-modal {
   width: min(560px, 100%);
+  flex: 0 1 auto;
+  min-height: 0;
   max-height: min(92vh, calc(100vh - 32px));
   max-height: min(92dvh, calc(100vh - 32px));
   overflow-y: auto;
@@ -1042,17 +1066,6 @@ body {
 }
 
 @media (max-width: 800px) {
-  .subscription-modal-backdrop,
-  .checkout-modal-backdrop,
-  .activation-success-backdrop,
-  .privacy-policy-backdrop {
-    align-items: flex-start;
-    justify-content: center;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-
   .page {
     padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
       max(28px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));

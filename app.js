@@ -481,7 +481,7 @@ function mount() {
                 <span>1 year</span><strong>$1,499.99</strong>
               </button>
               <button type="button" class="subscription-price-row" data-plan="pro" data-term="lifetime">
-                <span>Lifetime <em>One-time purchase</em></span><strong>$3,999.99</strong>
+                <span>Lifetime <em>One-time purchase</em></span><strong>$3,999.99 </strong>
               </button>
             </div>
           </div>
