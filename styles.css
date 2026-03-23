@@ -554,6 +554,33 @@ body {
   margin-bottom: 8px;
 }
 
+.subscription-plans-section {
+  margin-top: 12px;
+}
+
+.subscription-plans-heading {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.subscription-plans-lede {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.subscription-plan-perks {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
 .subscription-plan-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -561,7 +588,7 @@ body {
 }
 
 .subscription-plan-grid--pricing {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .checkout-grid {

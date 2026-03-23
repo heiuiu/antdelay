@@ -433,9 +433,13 @@ function mount() {
         <div class="subscription-refund-note">
           Note: All purchases are non-refundable under any circumstances.
         </div>
-        <div class="subscription-plan-grid subscription-plan-grid--pricing">
+        <div class="subscription-plans-section" aria-labelledby="subscription-plans-heading">
+          <div id="subscription-plans-heading" class="subscription-plans-heading">What each plan includes</div>
+          <p class="subscription-plans-lede">Higher tiers include everything in the tiers below.</p>
+          <div class="subscription-plan-grid subscription-plan-grid--pricing">
           <div class="subscription-plan-card">
             <div class="subscription-plan-name">BASIC</div>
+            <div class="subscription-plan-perks">Add new tasks</div>
             <div class="subscription-price-list">
               <button type="button" class="subscription-price-row" data-plan="basic" data-term="1 month">
                 <span>1 month</span><strong>$79.99</strong>
@@ -453,9 +457,10 @@ function mount() {
           </div>
           <div class="subscription-plan-card">
             <div class="subscription-plan-name">PLUS</div>
+            <div class="subscription-plan-perks">Basic + view &amp; edit saved tasks in each day</div>
             <div class="subscription-price-list">
               <button type="button" class="subscription-price-row" data-plan="plus" data-term="1 month">
-                <span>1 month</span><strong>$99.99 </strong>
+                <span>1 month</span><strong>$99.99</strong>
               </button>
               <button type="button" class="subscription-price-row" data-plan="plus" data-term="6 months">
                 <span>6 months (~$91/mo)</span><strong>$549.99</strong>
@@ -470,6 +475,7 @@ function mount() {
           </div>
           <div class="subscription-plan-card">
             <div class="subscription-plan-name">PRO</div>
+            <div class="subscription-plan-perks">Plus + John Pork overlay (front / behind calendar)</div>
             <div class="subscription-price-list">
               <button type="button" class="subscription-price-row" data-plan="pro" data-term="1 month">
                 <span>1 month</span><strong>$129.99</strong>
@@ -481,9 +487,10 @@ function mount() {
                 <span>1 year</span><strong>$1,499.99</strong>
               </button>
               <button type="button" class="subscription-price-row" data-plan="pro" data-term="lifetime">
-                <span>Lifetime <em>One-time purchase</em></span><strong>$3,999.99 </strong>
+                <span>Lifetime <em>One-time purchase</em></span><strong>$3,999.99</strong>
               </button>
             </div>
+          </div>
           </div>
         </div>
         <button type="button" class="subscription-modal-close js-subscription-close">Maybe later</button>
