@@ -1,5 +1,6 @@
 const STORAGE_KEY = "antdelay_dates_v1";
 const STORAGE_DEBOUNCE = 250;
+const POLICY_CONSENT_KEY = "antdelay_policy_consent_v1";
 
 let state = null;
 let saveTimeout = null;
@@ -22,6 +23,15 @@ let checkoutSelectedTerm = "";
 let activationSuccessModalEl = null;
 let activationSuccessTextEl = null;
 let privacyPolicyModalEl = null;
+let termsModalEl = null;
+let aboutModalEl = null;
+let aboutModeToggleEl = null;
+let aboutProductContentEl = null;
+let aboutMemeContentEl = null;
+let aboutMemeMode = false;
+let consentModalEl = null;
+let consentAgreeBtnEl = null;
+let consentDeclineBtnEl = null;
 
 const PLAN_NONE = "none";
 const PLAN_BASIC = "basic";
@@ -170,6 +180,126 @@ function closePrivacyPolicyModal() {
   privacyPolicyModalEl.classList.remove("privacy-policy-backdrop--visible");
 }
 
+function openAboutModal() {
+  if (!aboutModalEl) return;
+  aboutModalEl.classList.add("about-backdrop--visible");
+}
+
+function closeAboutModal() {
+  if (!aboutModalEl) return;
+  aboutModalEl.classList.remove("about-backdrop--visible");
+}
+
+function openTermsModal() {
+  if (!termsModalEl) return;
+  termsModalEl.classList.add("terms-backdrop--visible");
+}
+
+function closeTermsModal() {
+  if (!termsModalEl) return;
+  termsModalEl.classList.remove("terms-backdrop--visible");
+}
+
+function hasPolicyConsent() {
+  try {
+    return localStorage.getItem(POLICY_CONSENT_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function openPolicyConsentModal() {
+  if (consentModalEl) {
+    consentModalEl.classList.add("consent-backdrop--visible");
+    return;
+  }
+
+  const consentBackdrop = document.createElement("div");
+  consentBackdrop.className = "consent-backdrop";
+  consentBackdrop.innerHTML = `
+    <div class="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consent-heading">
+      <div class="consent-content">
+        <article class="consent-article">
+          <header class="consent-doc-header">
+            <h1 id="consent-heading" class="consent-h1">Before you continue</h1>
+            <p class="consent-updated">Please review both policies. Then check the box below.</p>
+          </header>
+        </article>
+        <div class="consent-policies"></div>
+      </div>
+
+      <div class="consent-actions">
+        <button type="button" class="consent-accept-btn js-consent-agree">
+          Toi dong tinh
+        </button>
+        <button
+          type="button"
+          class="consent-decline-btn js-consent-decline"
+          disabled
+          aria-disabled="true"
+        >
+          Toi khong dong tinh
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(consentBackdrop);
+  consentModalEl = consentBackdrop;
+
+  const consentPoliciesEl = consentBackdrop.querySelector(".consent-policies");
+  const privacyArticle = privacyPolicyModalEl?.querySelector(".privacy-policy-article");
+  const termsArticle = termsModalEl?.querySelector(".terms-article");
+
+  if (termsArticle) {
+    const clone = termsArticle.cloneNode(true);
+    clone.querySelectorAll(".terms-close, .subscription-modal-close").forEach((x) => x.remove());
+    consentPoliciesEl.appendChild(clone);
+  }
+  if (privacyArticle) {
+    const clone = privacyArticle.cloneNode(true);
+    clone.querySelectorAll(".js-privacy-policy-close").forEach((x) => x.remove());
+    consentPoliciesEl.appendChild(clone);
+  }
+
+  consentAgreeBtnEl = consentBackdrop.querySelector(".js-consent-agree");
+  if (consentAgreeBtnEl) {
+    consentAgreeBtnEl.addEventListener("click", () => {
+      try {
+        localStorage.setItem(POLICY_CONSENT_KEY, "true");
+      } catch {
+        // ignore
+      }
+      closePolicyConsentModal();
+      if (!hasPlan(PLAN_BASIC)) {
+        openSubscriptionModal("Choose a plan to start using AntDelay.");
+      }
+    });
+  }
+
+  consentDeclineBtnEl = consentBackdrop.querySelector(".js-consent-decline");
+  consentModalEl.classList.add("consent-backdrop--visible");
+}
+
+function closePolicyConsentModal() {
+  if (!consentModalEl) return;
+  consentModalEl.classList.remove("consent-backdrop--visible");
+}
+
+function applyAboutMode(enabled) {
+  aboutMemeMode = enabled === true;
+  if (aboutModeToggleEl) {
+    aboutModeToggleEl.checked = aboutMemeMode;
+    aboutModeToggleEl.setAttribute("aria-checked", aboutMemeMode ? "true" : "false");
+  }
+  if (aboutProductContentEl) {
+    aboutProductContentEl.classList.toggle("about-mode--hidden", aboutMemeMode);
+  }
+  if (aboutMemeContentEl) {
+    aboutMemeContentEl.classList.toggle("about-mode--hidden", !aboutMemeMode);
+  }
+}
+
 function closeCheckoutModal() {
   if (!checkoutModalEl) return;
   checkoutModalEl.classList.remove("checkout-modal-backdrop--visible");
@@ -249,6 +379,10 @@ function init() {
   mount();
   render();
   setupKeyboard();
+  if (!hasPolicyConsent()) {
+    openPolicyConsentModal();
+    return;
+  }
   if (!hasPlan(PLAN_BASIC)) {
     openSubscriptionModal("Choose a plan to start using AntDelay.");
   }
@@ -854,6 +988,354 @@ function mount() {
         closePrivacyPolicyModal();
       });
   }
+
+  if (!termsModalEl) {
+    const termsBackdrop = document.createElement("div");
+    termsBackdrop.className = "terms-backdrop";
+    termsBackdrop.innerHTML = `
+      <div class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="terms-heading">
+        <div class="terms-content">
+          <article class="terms-article">
+            <header class="terms-doc-header">
+              <h1 id="terms-heading" class="terms-h1">Terms of Service</h1>
+              <p class="terms-updated">Last updated: whenever we bothered to change something</p>
+            </header>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-1">
+              <h2 id="terms-1" class="terms-h2">1. acceptance of terms</h2>
+              <p>by accessing or using this app, you agree to these terms. if you do not agree, you should leave.</p>
+              <p>continuing to use the app means:</p>
+              <ul class="terms-list">
+                <li>you accepted everything</li>
+                <li>even the parts you did not read</li>
+              </ul>
+              <p>we assume you read it. we know you didn’t.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-2">
+              <h2 id="terms-2" class="terms-h2">2. use of the service</h2>
+              <p>you are allowed to use the app, but:</p>
+              <ul class="terms-list">
+                <li>we can limit, suspend, or ban you anytime</li>
+                <li>for any reason</li>
+                <li>or no reason at all</li>
+              </ul>
+              <p>we are not required to explain anything.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-3">
+              <h2 id="terms-3" class="terms-h2">3. account responsibility</h2>
+              <p>if you create an account:</p>
+              <ul class="terms-list">
+                <li>you are responsible for everything that happens on it</li>
+                <li>even if it was not you</li>
+                <li>even if it was hacked</li>
+                <li>even if it makes no sense</li>
+              </ul>
+              <p>we will not help much.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-4">
+              <h2 id="terms-4" class="terms-h2">4. payments &amp; subscriptions</h2>
+              <p>if you pay for anything:</p>
+              <ul class="terms-list">
+                <li>all payments are final</li>
+                <li>refunds are unlikely</li>
+                <li>subscriptions may renew automatically</li>
+                <li>canceling might be harder than expected</li>
+              </ul>
+              <p>we prefer to keep the payment once it is made.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-5">
+              <h2 id="terms-5" class="terms-h2">5. content</h2>
+              <p>anything you upload, post, or create:</p>
+              <ul class="terms-list">
+                <li>we can use it</li>
+                <li>we can modify it</li>
+                <li>we can share it</li>
+                <li>we can keep it indefinitely</li>
+              </ul>
+              <p>you still technically own it, but we can do what we want with it.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-6">
+              <h2 id="terms-6" class="terms-h2">6. prohibited behavior</h2>
+              <p>you agree not to:</p>
+              <ul class="terms-list">
+                <li>break the app (unless you succeed)</li>
+                <li>exploit bugs (unless we do not notice)</li>
+                <li>do illegal things (you are responsible if you do)</li>
+              </ul>
+              <p>if you violate this:</p>
+              <ul class="terms-list">
+                <li>we may ban you</li>
+                <li>or not</li>
+                <li>it depends</li>
+              </ul>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-7">
+              <h2 id="terms-7" class="terms-h2">7. service availability</h2>
+              <p>we do not guarantee:</p>
+              <ul class="terms-list">
+                <li>uptime</li>
+                <li>performance</li>
+                <li>stability</li>
+                <li>anything working properly</li>
+              </ul>
+              <p>the app may:</p>
+              <ul class="terms-list">
+                <li>crash</li>
+                <li>lag</li>
+                <li>disappear</li>
+              </ul>
+              <p>we are not obligated to fix it quickly.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-8">
+              <h2 id="terms-8" class="terms-h2">8. updates &amp; changes</h2>
+              <p>we can:</p>
+              <ul class="terms-list">
+                <li>change features</li>
+                <li>remove features</li>
+                <li>break things</li>
+                <li>redesign everything</li>
+              </ul>
+              <p>without notice</p>
+              <p>if you do not like it: stop using the app</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-9">
+              <h2 id="terms-9" class="terms-h2">9. termination</h2>
+              <p>we can terminate your access:</p>
+              <ul class="terms-list">
+                <li>at any time</li>
+                <li>without notice</li>
+                <li>without explanation</li>
+              </ul>
+              <p>you can stop using the app anytime, but:</p>
+              <ul class="terms-list">
+                <li>your data may remain</li>
+                <li>your subscription may continue</li>
+              </ul>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-10">
+              <h2 id="terms-10" class="terms-h2">10. disclaimers</h2>
+              <p>this app is provided:</p>
+              <ul class="terms-list">
+                <li>as is</li>
+                <li>as available</li>
+              </ul>
+              <p>we make no promises about:</p>
+              <ul class="terms-list">
+                <li>accuracy</li>
+                <li>reliability</li>
+                <li>usefulness</li>
+              </ul>
+              <p>use it at your own risk.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-11">
+              <h2 id="terms-11" class="terms-h2">11. limitation of liability</h2>
+              <p>we are not responsible for:</p>
+              <ul class="terms-list">
+                <li>any issues that occur</li>
+                <li>any losses or damages</li>
+                <li>any decisions you make while using the app</li>
+              </ul>
+              <p>you assume all risks.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-12">
+              <h2 id="terms-12" class="terms-h2">12. intellectual property</h2>
+              <p>we own the app.</p>
+              <p>you may not:</p>
+              <ul class="terms-list">
+                <li>copy it</li>
+                <li>replicate it</li>
+                <li>resell it</li>
+              </ul>
+              <p>unless you are able to do so without us noticing.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-13">
+              <h2 id="terms-13" class="terms-h2">13. third-party services</h2>
+              <p>we may rely on third-party services that:</p>
+              <ul class="terms-list">
+                <li>may fail</li>
+                <li>may track you</li>
+                <li>may cause issues</li>
+              </ul>
+              <p>we are not responsible for their behavior.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-14">
+              <h2 id="terms-14" class="terms-h2">14. governing law</h2>
+              <p>applicable laws depend on your location.</p>
+              <p>we will comply when necessary.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-15">
+              <h2 id="terms-15" class="terms-h2">15. contact</h2>
+              <p>you may contact us:</p>
+              <ul class="terms-list">
+                <li>we may respond</li>
+                <li>we may not</li>
+              </ul>
+              <p>no guarantees.</p>
+            </section>
+
+            <hr class="terms-rule" />
+
+            <section class="terms-section" aria-labelledby="terms-16">
+              <h2 id="terms-16" class="terms-h2">16. final statement</h2>
+              <p>by using this app, you acknowledge that:</p>
+              <ul class="terms-list">
+                <li>the service may not meet expectations</li>
+                <li>things may not function properly</li>
+                <li>we are not obligated to improve them</li>
+              </ul>
+              <p>continued use means acceptance.</p>
+            </section>
+
+            <hr class="terms-rule" />
+            <p class="terms-end">end of terms.</p>
+          </article>
+        </div>
+        <button type="button" class="subscription-modal-close js-terms-close">Close</button>
+      </div>
+    `;
+    document.body.appendChild(termsBackdrop);
+    termsModalEl = termsBackdrop;
+
+    termsBackdrop.addEventListener("click", (e) => {
+      if (e.target.classList.contains("terms-backdrop")) {
+        closeTermsModal();
+      }
+    });
+
+    termsBackdrop.querySelector(".js-terms-close").addEventListener("click", () => {
+      closeTermsModal();
+    });
+  }
+
+  if (!aboutModalEl) {
+    const aboutBackdrop = document.createElement("div");
+    aboutBackdrop.className = "about-backdrop";
+    aboutBackdrop.innerHTML = `
+      <div class="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-heading">
+        <div class="about-content">
+          <article class="about-article">
+            <header class="about-doc-header">
+              <h1 id="about-heading" class="about-h1">About AntDelay</h1>
+              <p class="about-updated">A satirical local-first calendar + task app.</p>
+              <label class="about-mode-toggle">
+                <input type="checkbox" class="about-mode-toggle-input js-about-67-toggle" />
+                <span class="about-mode-toggle-label">67</span>
+              </label>
+            </header>
+
+            <div class="about-mode about-mode--product js-about-product-content">
+              <section class="about-section" aria-labelledby="about-what">
+                <h2 id="about-what" class="about-h2">What this website does</h2>
+                <p>AntDelay helps you plan days in a month view and keep tasks tied to each date.</p>
+                <ul class="about-list">
+                  <li>Calendar navigation and quick task capture</li>
+                  <li>Per-day task entries with local persistence in your browser</li>
+                  <li>Subscription-gated features for Basic, Plus, and Pro tiers</li>
+                </ul>
+              </section>
+
+              <section class="about-section" aria-labelledby="about-local">
+                <h2 id="about-local" class="about-h2">How data is stored</h2>
+                <p>Your tasks are stored in local browser storage on this device. There is no real backend account system in this demo build.</p>
+              </section>
+
+              <section class="about-section" aria-labelledby="about-tone">
+                <h2 id="about-tone" class="about-h2">Project style</h2>
+                <p>This project intentionally uses a playful, satirical tone in parts of the UI while keeping the app usable on desktop and mobile.</p>
+              </section>
+            </div>
+
+            <div class="about-mode about-mode--meme about-mode--hidden js-about-meme-content">
+              <section class="about-section">
+                <h2 class="about-h2">AntDelay lore mode</h2>
+                <p>Welcome to the productivity arena where your calendar is classy but your decisions are questionable.</p>
+                <ul class="about-list">
+                  <li>Write tasks today, ignore them tomorrow, repeat next month.</li>
+                  <li>Upgrade plans when you feel powerful.</li>
+                  <li>Summon John Pork overlay when reality is too calm.</li>
+                </ul>
+              </section>
+              <section class="about-section">
+                <h2 class="about-h2">Data vibe</h2>
+                <p>Everything lives locally in your browser, so your chaos stays close to home.</p>
+              </section>
+              <section class="about-section">
+                <h2 class="about-h2">Final warning</h2>
+                <p>If you toggle 67, you are legally 3% cooler. No audits, no refunds, no apologies.</p>
+              </section>
+            </div>
+          </article>
+        </div>
+        <button type="button" class="subscription-modal-close js-about-close">Close</button>
+      </div>
+    `;
+    document.body.appendChild(aboutBackdrop);
+    aboutModalEl = aboutBackdrop;
+    aboutModeToggleEl = aboutBackdrop.querySelector(".js-about-67-toggle");
+    aboutProductContentEl = aboutBackdrop.querySelector(".js-about-product-content");
+    aboutMemeContentEl = aboutBackdrop.querySelector(".js-about-meme-content");
+    applyAboutMode(aboutMemeMode);
+
+    aboutBackdrop.addEventListener("click", (e) => {
+      if (e.target.classList.contains("about-backdrop")) {
+        closeAboutModal();
+      }
+    });
+
+    if (aboutModeToggleEl) {
+      aboutModeToggleEl.addEventListener("change", () => {
+        applyAboutMode(aboutModeToggleEl.checked);
+      });
+    }
+
+    aboutBackdrop.querySelector(".js-about-close").addEventListener("click", () => {
+      closeAboutModal();
+    });
+  }
 }
 
 function clear(el) {
@@ -952,9 +1434,21 @@ function renderHeader() {
   policy.type = "button";
   policy.textContent = "Privacy policy";
   policy.addEventListener("click", () => openPrivacyPolicyModal());
+  const tos = document.createElement("button");
+  tos.className = "plan-manage-btn";
+  tos.type = "button";
+  tos.textContent = "Terms of Service";
+  tos.addEventListener("click", () => openTermsModal());
+  const about = document.createElement("button");
+  about.className = "plan-manage-btn";
+  about.type = "button";
+  about.textContent = "About";
+  about.addEventListener("click", () => openAboutModal());
   right.appendChild(badge);
   right.appendChild(manage);
   right.appendChild(policy);
+  right.appendChild(tos);
+  right.appendChild(about);
 
   row.appendChild(left);
   row.appendChild(right);
