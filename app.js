@@ -872,6 +872,7 @@ function render() {
   notebook.appendChild(renderCalendar());
 
   root.appendChild(notebook);
+  root.appendChild(renderFooter());
   updateJohnPorkButtonLabel();
   if (johnPorkLayerEl) {
     johnPorkLayerEl.classList.toggle("john-pork-mascot--hidden", !hasPlan(PLAN_PRO));
@@ -892,6 +893,31 @@ function render() {
       if (!syncAfterScroll) updateTodaySyncUi();
     });
   });
+}
+
+function renderFooter() {
+  const footer = document.createElement("footer");
+  footer.className = "site-footer";
+
+  const line1 = document.createElement("p");
+  line1.className = "site-footer-line";
+  line1.append("© 2026 by ");
+  const ig = document.createElement("a");
+  ig.className = "site-footer-link";
+  ig.href = "https://www.instagram.com/_brokolili/";
+  ig.target = "_blank";
+  ig.rel = "noopener noreferrer";
+  ig.textContent = "heiu";
+  line1.appendChild(ig);
+  line1.append(". all rights NOT reserved.");
+
+  const line2 = document.createElement("p");
+  line2.className = "site-footer-tagline";
+  line2.textContent = "do whatever";
+
+  footer.appendChild(line1);
+  footer.appendChild(line2);
+  return footer;
 }
 
 function renderHeader() {
